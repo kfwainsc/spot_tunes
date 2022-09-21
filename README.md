@@ -1,1 +1,1 @@
-Playlist App build with REACT using the Spotify API
+Playlist App built with REACT using Spotify API
