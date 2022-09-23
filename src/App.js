@@ -4,22 +4,15 @@ import "./styles/App.css";
 import {SearchBar} from "./SearchBar";
 import {SearchResults} from "./SearchResults";
 import {Playlist} from "./Playlist";
+import Spotify from "./util/Spotify";
 
 export class App extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      playlistName: "Songs to get Help",
-      searchResults: [
-        {name: "Song Nemo", artist: "Nemo", album: "Alb", id: 1},
-        {name: "Song Nemo2", artist: "Nemo2", album: "Alb2", id: 2},
-        {name: "Song Nemo3", artist: "Nemo3", album: "Alb3", id: 3},
-        {name: "Song Nemo4", artist: "Nemo4", album: "Alb4", id: 4},
-      ],
-      playlistTracks: [
-        {name: "Song Nemo2", artist: "Nemo2", album: "Alb2", id: 2},
-        {name: "Song Nemo4", artist: "Nemo4", album: "Alb4", id: 4},
-      ],
+      searchResults: [],
+      playlistName: "",
+      playlistTracks: [],
     };
     this.setPlaylistName = this.setPlaylistName.bind(this);
     this.search = this.search.bind(this);
@@ -30,8 +23,12 @@ export class App extends React.Component {
   setPlaylistName(newName) {
     this.setState({playlistName: newName});
   }
-  search(keyWord) {
-    console.log(keyWord);
+  search(term) {
+    //can passed in searchResults be a diff named var?
+    Spotify.search(term).then((searchResults) => {
+      console.log(searchResults);
+      this.setState({searchResults: searchResults});
+    });
   }
   addTrack(track) {
     let currPlaylist = this.state.playlistTracks;
@@ -47,8 +44,16 @@ export class App extends React.Component {
     this.setState({playlistTracks: newPlaylist});
   }
   savePlaylist() {
-    alert("TEMP!");
-    const trackURIs = this.state.playlistTracks.map((track) => track.uri);
+    if (!this.state.playlistTracks.length) {
+      alert("Empty Playlist! Please add a song to save.");
+      return;
+    } else {
+      const trackURIs = this.state.playlistTracks.map((track) => track.uri);
+      Spotify.savePlaylist(this.state.playlistName, trackURIs).then(() =>
+        //have saved, so now reset playlist
+        this.setState({playlistName: "Untitled Playlist", playlistTracks: []})
+      );
+    }
   }
   render() {
     return (
